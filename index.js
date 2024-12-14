@@ -6,7 +6,15 @@ const PORT = process.env.PORT || 5000;
 
 connectToDatabase();
 const app = express();
-app.use(cors());
+// CORS configuration
+const corsOptions = {
+    origin: 'https://maharaja-agrasen-institute.netlify.app/', // Netlify frontend URL
+    methods: 'GET,POST,PUT,DELETE', // Allowed methods
+    allowedHeaders: 'Content-Type,Authorization,auth-token', // Allowed headers
+    credentials: true // Enable credentials (cookies, etc.)
+};
+
+app.use(cors(corsOptions)); //Apply CORS setting
 app.use(express.json()); // Body parser
 
 // Routes
