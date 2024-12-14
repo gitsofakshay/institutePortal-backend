@@ -8,7 +8,7 @@ connectToDatabase();
 const app = express();
 // CORS configuration
 const corsOptions = {
-    origin: 'https://maharaja-agrasen-institute.netlify.app/', // Netlify frontend URL
+    origin: 'https://maharaja-agrasen-institute.netlify.app', // Netlify frontend URL
     methods: 'GET,POST,PUT,DELETE', // Allowed methods
     allowedHeaders: 'Content-Type,Authorization,auth-token', // Allowed headers
     credentials: true // Enable credentials (cookies, etc.)
