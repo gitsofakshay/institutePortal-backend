@@ -7,14 +7,27 @@ const PORT = process.env.PORT || 5000;
 connectToDatabase();
 const app = express();
 // CORS configuration
+const allowedOrigins = [
+    'https://maharaja-agrasen-institute.netlify.app', // Netlify frontend URL
+    'http://localhost:5173', // Local development frontend
+];
+
 const corsOptions = {
-    origin: 'https://maharaja-agrasen-institute.netlify.app', // Netlify frontend URL
+    origin: (origin, callback) => {
+        // Allow requests with no origin, such as mobile apps or curl requests
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     methods: 'GET,POST,PUT,DELETE', // Allowed methods
     allowedHeaders: 'Content-Type,Authorization,auth-token', // Allowed headers
-    credentials: true // Enable credentials (cookies, etc.)
+    credentials: true, // Enable credentials (cookies, etc.)
 };
 
 app.use(cors(corsOptions)); //Apply CORS setting
+// app.use(cors()); //Granting access to all origin
 app.use(express.json()); // Body parser
 
 // Routes

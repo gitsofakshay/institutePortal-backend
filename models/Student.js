@@ -30,7 +30,6 @@ const StudentSchema = new Schema({
   },
   enrolled:{
     type: Boolean,
-    default: false,
     required: true,
   },
   address: {

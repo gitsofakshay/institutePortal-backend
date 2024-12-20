@@ -62,34 +62,39 @@ router.post('/verifyotp', [
     }
 
     try {
-        //Email verification process
+        // Email verification process
         const { email, otp } = req.body;        
         const user = await Admin.findOne({ email: email });
-
-        const loginOtp = await LoginOtp.findOne({userId: user._id, otp: otp});
-        if (!loginOtp || loginOtp.otp !== parseInt(otp) || loginOtp.expirationTime < Date.now()) {
-            await LoginOtp.deleteOne({_id: loginOtp._id})
-            return res.status(401).json({ message: 'Invalid or expired OTP'});            
+    
+        if (!user) {
+            return res.status(404).json({success:success, message: 'Admin user not found' });
         }
-        // const otpRecord = await LoginOtp.findOne({ user_id: req.body.user_id, otp: req.body.otp });
-        // if (!otpRecord || otpRecord.expirationTime < Date.now()) {
-        //     await LoginOtp.deleteOne({ _id: otpRecord._id });
-        //     return res.status(400).json({ success, error: 'Invalid or expired OTP' });
-        // }
-        // await LoginOtp.deleteOne({ _id: otpRecord._id });
-
+    
+        const loginOtp = await LoginOtp.findOne({ userId: user._id });
+        // Check if OTP exists and is valid
+        if (!loginOtp || loginOtp.isExpired()) {
+            await LoginOtp.deleteOne({ _id: loginOtp._id });
+            return res.status(401).json({ success:success,message: 'OTP has expired' });
+        }
+    
+        if (loginOtp.otp !== parseInt(otp)) {
+            return res.status(401).json({success: success, message: 'Invalid OTP' });
+        }
+    
+        // If OTP is correct, delete it and proceed
         await LoginOtp.deleteOne({ _id: loginOtp._id });
+    
         const data = {
             user: {
                 id: user.id
             }
-        }
+        };
         success = true;
         const authToken = jwt.sign(data, process.env.JWT_SECRET);
-        res.status(200).json({ success, authToken: authToken, msg: 'Login  to admin pannel is successfull' });
+        res.status(200).json({ success: success, authToken, msg: 'Login to admin panel is successful' });
     } catch (error) {        
         console.error(error.message);
-        res.status(500).json({ success, error: 'Internal Server error' });
+        res.status(500).json({ success: false, error: 'Internal Server error' });
     }
 });
 
