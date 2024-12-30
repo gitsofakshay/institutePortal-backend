@@ -5,11 +5,11 @@ require('dotenv').config();
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 //function for seding the email with otp
-const sendOTP = (email, otp) => {
+const sendOTP = (email, title, otp) => {
     const msg = {
         to: email,
         from: process.env.EMAIL_USER,
-        subject: 'Maharaja Agrasen institute admin verification OTP',
+        subject: `Maharaja Agrasen institute admin ${title} OTP`,
         text: `Your OTP is ${otp}. It is valid for 5 minutes.`,
         html: `<strong>Your OTP is ${otp}. It is valid for 5 minutes.</strong>`,
     };

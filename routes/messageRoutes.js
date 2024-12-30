@@ -73,7 +73,7 @@ router.post("/fetchnotification", [
             success = true;
             res.status(200).json(notify);
         }else{
-            res.status(404).json({success, msg: 'Sorry! invalid access is not allowed'});            
+            res.status(401).json({success, msg: 'Sorry! invalid access is not allowed'});            
         }
     } catch (error) {
         console.error(error.message);
