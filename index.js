@@ -32,6 +32,10 @@ app.use(express.json()); // Body parser
 
 // Routes
 app.use("/api/students", require("./routes/studentRoutes"));
+app.use('/api/handle-students', require('./routes/handleStudentsRoutes'));
+app.use('/api/fees', require('./routes/feesRoutes'));
+app.use('/api/otp', require('./routes/handleOptRoutes'))
+app.use('/api/faculty', require('./routes/facultyRoutes'))
 app.use("/api/send-message", require("./routes/messageRoutes"));
 app.use("/api/auth", require("./routes/authentication"));
 

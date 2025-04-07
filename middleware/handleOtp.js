@@ -9,8 +9,8 @@ const sendOTP = (email, title, otp) => {
     const msg = {
         to: email,
         from: process.env.EMAIL_USER,
-        subject: `Maharaja Agrasen institute admin ${title} OTP`,
-        text: `Your OTP is ${otp}. It is valid for 5 minutes.`,
+        subject: `Akshay Institute ${title} OTP`,
+        text: `Your OTP is ${otp}. It is valid for 5 minutes. Don't share it to anyone.`,
         html: `<strong>Your OTP is ${otp}. It is valid for 5 minutes.</strong>`,
     };
     
@@ -21,35 +21,20 @@ const sendMessage = (email,name,message) => {
     const msg = {
         to: email,
         from: process.env.EMAIL_USER,
-        subject: 'Maharaja Agrasen Institute important alert',
-        text: `Dear ${name} ${message}`,
-        html: `<strong>Best Regards form Maharaja Agrasen Institute!</strong>`,
+        subject: 'Akshay Institute important alert',
+        text: `Dear ${name},\n\n${message}`,
+        html: `
+            <p>Dear ${name},</p>
+            <p>${message}</p>
+            <br />
+            <strong>Best Regards from Akshay Institute!</strong>
+        `,
     };
 
     return sgMail.send(msg);
 };
 
-//function for generating otp
-const generateOTP = () => {
-    return Math.floor(100000 + Math.random() * 900000); // 6-digit OTP
-};
-
-// Save OTP in the database with user ID and timestamp
-const saveOTP = async (userId, otp) => {
-    const expirationTime = Date.now() + 5 * 60 * 1000; // OTP valid for 5 minutes
-    await OTPModel.create({ userId, otp, expirationTime });
-};
-
-// Save OTP in the database with user email and timestamp
-// const saveSignupOtp = async (email, otp) => {
-//     const expirationTime = Date.now() + 5 * 60 * 1000; // OTP valid for 5 minutes
-//     await SignupOTP.create({ email, otp, expirationTime });
-// };
-
 module.exports = {
-    sendOTP,
-    generateOTP,
-    saveOTP,
-    sendMessage
-    // saveSignupOtp,
+    sendOTP,    
+    sendMessage    
 };
