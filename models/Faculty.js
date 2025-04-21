@@ -27,6 +27,10 @@ const facultySchema = new Schema({
     unique: true
   },
   courses: [{ type: String, required: true }], // List of courses taught by faculty
+  address: {
+    type: String,
+    required: true
+  },
   role: {
     type: String,
     enum: ['Faculty'], // Keeping it consistent for role-based authentication

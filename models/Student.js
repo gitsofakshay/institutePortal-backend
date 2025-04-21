@@ -29,7 +29,11 @@ const StudentSchema = new Schema({
       {
         amount: { type: Number, required: true },
         date: { type: Date, required: true },
-        method: { type: String, enum: ['Cash', 'Card', 'UPI', 'Bank Transfer'], required: true }
+        method: {
+          type: String,
+          enum: ['Cash', 'Card', 'UPI', 'Bank Transfer', 'Razorpay'], // ✅ Added Razorpay
+          required: true
+        }        
       }
     ],
   },

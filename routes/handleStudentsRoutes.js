@@ -3,6 +3,7 @@ const Student = require('../models/Student');
 const bcrypt = require('bcryptjs'); // For password hashing
 const jwt = require('jsonwebtoken'); // For authentication
 const authMiddleware = require('../middleware/authMiddleware'); // Auth middleware
+const { isVerified } = require('../middleware/isVarified');
 const { body, validationResult } = require('express-validator');
 const Notification = require('../models/Notification'); // Import Notification model
 require('dotenv').config();
@@ -11,7 +12,7 @@ const router = express.Router();
 
 // Route for students to set their password (if record exists)
 router.post(
-  '/set-password',
+  '/set-password',isVerified,
   [
     body('email').isEmail().withMessage('Valid email is required'),
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
@@ -37,21 +38,21 @@ router.post(
   
       res.json({ message: 'Password set successfully. You can now log in.' });
     } catch (error) {
-      res.status(500).json({ message: 'Server Error' });
+      res.status(500).json({ message: `Server Error: ${error}` });
     }
   }
 );
 
 // Student login route
 router.post(
-  '/login',
+  '/login', isVerified,
   [
     body('email').isEmail().withMessage('Valid email is required'),
     body('password').notEmpty().withMessage('Password is required'),
   ],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+    if (!errors.isEmpty()) return res.status(400).json({ message: errors.array() });
 
     try {
       const { email, password } = req.body;
@@ -73,19 +74,19 @@ router.post(
       };
       
       // Generate JWT token
-      const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
+      const authToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
   
-      res.json({ token, student: { id: student._id, name: student.name, email: student.email } });
+      res.json({ authToken, student: { id: student._id, name: student.name, email: student.email } });
     } catch (error) {
-      res.status(500).json({ message: 'Server Error' });
+      res.status(500).json({ message: `Server Error: ${error}` });
     }
   }
 );
 
-  
-// Reset Password
-router.post(
-  '/reset-password',
+
+// Reset Password 
+router.put(
+  '/reset-password', isVerified,
   [
     body('email').isEmail().withMessage('Valid email is required'),   
     body('newPassword').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
@@ -109,7 +110,7 @@ router.post(
       res.json({ message: 'Password reset successful. You can now log in.' });
   
     } catch (error) {
-      res.status(500).json({ message: 'Server Error' });
+      res.status(500).json({ message: `Server Error: ${error}` });
     }
   }
 );
@@ -124,7 +125,7 @@ router.get('/profile', authMiddleware, async (req, res) => {
     const student = await Student.findById(req.user.id).select('-password');
     res.json(student);
   } catch (error) {
-    res.status(500).json({ error: 'Server Error' });
+    res.status(500).json({ message: `Server Error: ${error}` });
   }
 });
 
@@ -145,11 +146,11 @@ router.get('/attendance', authMiddleware, async (req, res) => {
       absentCount: absent
     });
   } catch (error) {
-    res.status(500).json({ error: 'Server Error' });
+    res.status(500).json({ message: `Server Error: ${error}` });
   }
 });
 
-// Route for Notification: POST "/api/send-message/fetchnotification" - Access code required
+// Route for Notification: POST "/api/handle-students/fetchnotification" - Access code required
 router.post(
   '/fetchnotification',
   [
@@ -177,7 +178,7 @@ router.post(
       }
     } catch (error) {
       console.error(error.message);
-      res.status(500).json({ success, error: 'Internal Server Error' });
+      res.status(500).json({ success, message: `Server Error: ${error}` });
     }
   }
 );

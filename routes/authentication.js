@@ -3,11 +3,12 @@ const Admin = require('../models/AdminUser');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { isVerified } = require('../middleware/isVarified');
 const { body, validationResult } = require('express-validator');
 require('dotenv').config();
 
 //Route 1: Create a user using : POST "/api/auth/createadmin" , No login required.
-router.post('/createadmin', [
+router.post('/createadmin', isVerified, [
     body('name', 'Name must be atleast 3 character').isLength({ min: 3 }),
     body('email', 'Enter a valid email').isEmail(),
     body('password', 'Password should be atleast 5 character').isLength({ min: 5 }),
@@ -47,7 +48,7 @@ router.post('/createadmin', [
 
 
 //Route 2: Authenticate a user using : POST "/api/auth/login" , No login required.
-router.post('/login', [
+router.post('/login', isVerified, [
     body('email', 'Enter a valid email').isEmail(),
     body('password', 'Password can not be blank').isLength({min:1}),
     // body('otp', 'otp must be 6 digit').isLength({ max: 6 }),
@@ -90,7 +91,7 @@ router.post('/login', [
 });
 
 //Route 3: Change Password using : POST "/api/auth/changepassword" , No login required.
-router.post('/changepassword', [
+router.put('/change-password', isVerified, [
     body('email', 'Enter a valid email').isEmail(),
     body('newPassword','newPassword should be atleast 5 character').isLength({min:5})
 ], async (req, res) => {
@@ -98,7 +99,7 @@ router.post('/changepassword', [
     //If there are error return bad request
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ success, msg: errors.array() });
+        return res.status(400).json({ success, message: errors.array() });
     }
 
     const { email, newPassword} = req.body;
@@ -106,7 +107,7 @@ router.post('/changepassword', [
         //Checking email is valid or not
         let user = await Admin.findOne({ email });
         if (!user) {
-            return res.status(401).json({ success, msg: "Please enter valid credentials" });
+            return res.status(401).json({ success, message: "Please enter valid credentials" });
         }
 
         //hashing password by using bryptjs package
@@ -116,16 +117,16 @@ router.post('/changepassword', [
         //updating password
         await Admin.findOneAndUpdate({ email }, { password: secPassword });
         success = true;
-        res.status(200).json({ success, msg: 'Password changed successfully' });
+        res.status(200).json({ success, message: 'Password changed successfully' });
 
     } catch (error) {
         console.log(error.message);
-        res.status(500).json({ success, msg: 'Internal Server error' });
+        res.status(500).json({ success, message: 'Internal Server error' });
     }
 });
 
 //Route 4: Change Email using : POST "/api/auth/changeemail" , No login required.
-router.post('/changeemail', [
+router.put('/changeemail', isVerified, [
     body('email', 'Enter a valid email').isEmail(),
     body('newEmail', 'Enter a valid email').isEmail()
 ], async (req, res) => {
@@ -133,7 +134,7 @@ router.post('/changeemail', [
     //If there are error return bad request
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ success, msg: errors.array() });
+        return res.status(400).json({ success, message: errors.array() });
     }
 
     const { email, newEmail} = req.body;
@@ -141,17 +142,17 @@ router.post('/changeemail', [
         //Checking email is valid or not
         let user = await Admin.findOne({ email });
         if (!user) {
-            return res.status(401).json({ success, msg: "Please enter valid credentials" });
+            return res.status(401).json({ success, message: "Please enter valid credentials" });
         }
 
         //updating email
         await Admin.findOneAndUpdate({ email }, { email: newEmail });
         success = true;
-        res.status(200).json({ success, msg: 'Email changed successfully' });
+        res.status(200).json({ success, message: 'Email changed successfully' });
 
     } catch (error) {
         console.log(error.message);
-        res.status(500).json({ success, msg: 'Internal Server error' });
+        res.status(500).json({ success, message: 'Internal Server error' });
     }
 });
 

@@ -4,10 +4,12 @@ const Admin = require("../models/AdminUser"); // Admin model
 const Student = require("../models/Student"); // Student model
 const Faculty = require("../models/Faculty"); // Faculty model
 const { sendOTP } = require("../middleware/handleOtp");
+const jwt = require('jsonwebtoken');
 const crypto = require("crypto");
 const { body, validationResult } = require("express-validator");
 require('dotenv').config();
 const router = express.Router();
+const JWT_SECRET = process.env.JWT_SECRET;
 
 router.post(
   "/sendotp",
@@ -44,6 +46,11 @@ router.post(
       // Set OTP expiration time (e.g., 5 minutes)
       const expirationTime = new Date(Date.now() + 5 * 60 * 1000);
 
+      // Create short-lived token with OTP and email
+      const authToken = jwt.sign({ email, otp }, JWT_SECRET, {
+        expiresIn: "5m",
+      });
+
       // Save OTP in the database
       await OTPModel.create({
         userId: user._id,
@@ -56,7 +63,7 @@ router.post(
       const title = `${userType} verifition`;
       sendOTP(email, title, otp);
 
-      res.status(200).json({ message: "OTP sent successfully" });
+      res.status(200).json({ message: "OTP sent successfully",authToken});
     } catch (error) {
       res
         .status(500)
@@ -79,12 +86,15 @@ router.post(
   ],
   async (req, res) => {
     const errors = validationResult(req);
+    const token = req.header('auth-token')
+
     if (!errors.isEmpty())
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ message: errors.array() });
 
     try {      
-
       const { email, userType, otp } = req.body;
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      if (!decoded) return res.status(400).json({ message: "Invalid token" });
 
       // Determine the correct model
       let actualUserType = Array.isArray(userType) ? userType[0] : userType;
@@ -113,8 +123,13 @@ router.post(
         return res.status(400).json({ message: "OTP has expired" });
       }
 
+      // OTP matched - return a verified auth token to allow login or password change
+      const authToken = jwt.sign({ email: decoded.email }, JWT_SECRET, {
+        expiresIn: "30m",
+      });
+
       // OTP is valid – perform login or next step
-      res.status(200).json({ message: "OTP verified successfully" });
+      res.status(200).json({ message: "OTP verified successfully", authToken});
 
       // (Optional) Delete OTP after successful verification
       await OTPModel.deleteOne({ _id: otpRecord._id });

@@ -1,40 +1,43 @@
-const OTPModel = require('../models/LoginOtp');
-const sgMail = require('@sendgrid/mail');
+const formData = require('form-data');
+const Mailgun = require('mailgun.js');
 require('dotenv').config();
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const mailgun = new Mailgun(formData);
+const mg = mailgun.client({
+  username: 'api',
+  key: process.env.MAILGUN_API_KEY,
+});
 
-//function for seding the email with otp
+const DOMAIN = process.env.MAILGUN_DOMAIN;
+
+// Send OTP Email
 const sendOTP = (email, title, otp) => {
-    const msg = {
-        to: email,
-        from: process.env.EMAIL_USER,
-        subject: `Akshay Institute ${title} OTP`,
-        text: `Your OTP is ${otp}. It is valid for 5 minutes. Don't share it to anyone.`,
-        html: `<strong>Your OTP is ${otp}. It is valid for 5 minutes.</strong>`,
-    };
-    
-    return sgMail.send(msg);
+  return mg.messages.create(DOMAIN, {
+    from: `Akshay Institute <${process.env.EMAIL_USER}>`,
+    to: [email],
+    subject: `Akshay Institute ${title} OTP`,
+    text: `Your OTP is ${otp}. It is valid for 5 minutes. Don't share it with anyone.`,
+    html: `<strong>Your OTP is ${otp}. It is valid for 5 minutes.</strong>`,
+  });
 };
 
-const sendMessage = (email,name,message) => {
-    const msg = {
-        to: email,
-        from: process.env.EMAIL_USER,
-        subject: 'Akshay Institute important alert',
-        text: `Dear ${name},\n\n${message}`,
-        html: `
-            <p>Dear ${name},</p>
-            <p>${message}</p>
-            <br />
-            <strong>Best Regards from Akshay Institute!</strong>
-        `,
-    };
-
-    return sgMail.send(msg);
+// Send Custom Message Email
+const sendMessage = (email, name, message) => {
+  return mg.messages.create(DOMAIN, {
+    from: `Akshay Institute <${process.env.EMAIL_USER}>`,
+    to: [email],
+    subject: 'Akshay Institute Important Alert',
+    text: `Dear ${name},\n\n${message}`,
+    html: `
+      <p>Dear ${name},</p>
+      <p>${message}</p>
+      <br />
+      <strong>Best Regards from Akshay Institute!</strong>
+    `
+  });
 };
 
 module.exports = {
-    sendOTP,    
-    sendMessage    
+  sendOTP,
+  sendMessage,
 };
