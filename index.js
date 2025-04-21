@@ -8,7 +8,7 @@ connectToDatabase();
 const app = express();
 // CORS configuration
 const allowedOrigins = [
-    'https://maharaja-agrasen-institute.netlify.app', // Netlify frontend URL
+    'https://akshay-institute.netlify.app/', // Netlify frontend URL
     'http://localhost:5173', // Local development frontend
 ];
 
