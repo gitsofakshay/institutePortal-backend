@@ -8,22 +8,22 @@ connectToDatabase();
 const app = express();
 // CORS configuration
 const allowedOrigins = [
-    'https://akshay-institute.netlify.app/', // Netlify frontend URL
+    'https://akshay-institute.netlify.app', // Netlify frontend URL
     'http://localhost:5173', // Local development frontend
 ];
 
 const corsOptions = {
     origin: (origin, callback) => {
-        // Allow requests with no origin, such as mobile apps or curl requests
+        console.log("Incoming origin:", origin); // 🔍 Log for debugging
         if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
             callback(new Error('Not allowed by CORS'));
         }
     },
-    methods: 'GET,POST,PUT,DELETE', // Allowed methods
-    allowedHeaders: 'Content-Type,Authorization,auth-token', // Allowed headers
-    credentials: true, // Enable credentials (cookies, etc.)
+    methods: 'GET,POST,PUT,DELETE',
+    allowedHeaders: 'Content-Type,Authorization,auth-token',
+    credentials: true,
 };
 
 app.use(cors(corsOptions)); //Apply CORS setting
